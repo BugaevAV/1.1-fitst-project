@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render
 
 DATA = {
@@ -19,6 +20,7 @@ DATA = {
     # можете добавить свои рецепты ;)
 }
 
+
 # Напишите ваш обработчик. Используйте DATA как источник данных
 # Результат - render(request, 'calculator/index.html', context)
 # В качестве контекста должен быть передан словарь с рецептом:
@@ -28,3 +30,14 @@ DATA = {
 #     'ингредиент2': количество2,
 #   }
 # }
+
+
+def recip_data(request, recipe):
+    servings = request.GET.get('servings')
+    new_dict = DATA[recipe].copy()
+    if servings:
+        for key, value in new_dict.items():
+            value *= int(servings)
+            new_dict[key] = value
+    context = {'recipe': new_dict, 'servings': servings, }
+    return render(request, 'calculator/index.html', context)
