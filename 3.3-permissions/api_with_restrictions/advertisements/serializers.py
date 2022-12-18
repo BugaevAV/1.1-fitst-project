@@ -34,13 +34,13 @@ class AdvertisementSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Метод для валидации. Вызывается при создании и обновлении."""
-        open_qty = Advertisement.objects.\
+        opened_qty = Advertisement.objects.\
             filter(creator=self.context["request"].user).\
-            filter(status='OPEN').count()
-        if open_qty >= 10:
-            if 'status' in dict(data) and dict(data)['status'] == 'OPEN':
-                raise ValidationError('Невозможно изменить статус объявления,'
-                                      'превышен лимит открытых объявлений')
+            filter(status='OPEN').count() >= 10
+        if 'status' in data and data['status'] == 'OPEN' and opened_qty:
+            raise ValidationError('Невозможно изменить статус объявления,' 
+                                  'превышен лимит открытых объявлений')
+        elif self.context["view"].action == 'create' and opened_qty:
             raise ValidationError('Невозможно создать объявление,'
                                   'превышен лимит открытых объявлений')
         return data

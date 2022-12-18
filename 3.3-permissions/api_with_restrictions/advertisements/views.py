@@ -42,16 +42,14 @@ class AdvertisementViewSet(ModelViewSet):
     @action(methods=['patch'], detail=True)
     def favorite(self, request, pk=None):
         ad = Advertisement.objects.get(pk=pk)
-        u = User.objects.filter(username=request.user)
-        if u[0].id != ad.creator_id:
-            u[0].favorite.add(ad)
+        if request.user.id != ad.creator_id:
+            request.user.favorite.add(ad)
         else:
             return Response('Нельзя добавить в избранное свое объявление')
         return Response(AdvertisementSerializer(ad).data)
 
     @action(methods=['get'], detail=False)
     def favorite_ads(self, request):
-        filtered_obj = Advertisement.objects.filter(creator=request.user).\
-            exclude(favorite_for=None)
+        filtered_obj = Advertisement.objects.filter(favorite_for__in=[request.user.id])
         filtered_obj = AdvertisementSerializer(filtered_obj, many=True)
         return Response(filtered_obj.data)
