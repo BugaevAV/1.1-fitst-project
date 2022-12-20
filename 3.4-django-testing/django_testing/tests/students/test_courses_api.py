@@ -36,10 +36,10 @@ def students_limit():
 @pytest.mark.django_db
 def test_get_course(client, course_factory):
     course = course_factory(_quantity=1)
-    response = client.get("/api/v1/courses/")
+    response = client.get(f"/api/v1/courses/{course[0].id}/")
     data = response.json()
     assert response.status_code == 200
-    assert course[0].name == data[0]['name']
+    assert course[0].name == data['name']
 
 
 @pytest.mark.django_db
@@ -102,15 +102,3 @@ def test_delete_course(client, course_factory):
     client.delete(f"/api/v1/courses/{course_id}/")
     response = client.get(f"/api/v1/courses/{course_id}/")
     assert response.status_code == 404
-
-
-@pytest.mark.django_db
-def test_students_quantity(students_limit):
-    # students_set = baker.prepare(Student, _quantity=10)
-    # courses = baker.make(Course, students=students_set)
-    students = Student.objects.count()
-    if students > students_limit:
-        pytest.xfail("Превышен лимит студентов на курсе")
-    elif students == 0:
-        pytest.xfail("На курсе нет студентов")
-    assert 1 <= students <= students_limit
